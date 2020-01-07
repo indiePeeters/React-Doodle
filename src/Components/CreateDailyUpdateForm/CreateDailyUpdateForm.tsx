@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import Dropzone from './Dropzone/Dropzone';
-import DailyUpdate from '../../Models/DailyUpdate/DailyUpdate'
+import DailyUpdate from '../../Models/DailyUpdate'
 import DailyUpdateService from '../../Services/DailyUpdateService'
 import './CreateDailyUpdateForm.css'
 import { AppState, store } from '../../Store/configureStore';
@@ -53,6 +53,7 @@ const CreateDailyUpdateForm = (props: Props, state : CreateDailyUpdateFormState)
         </div>
     )
 }
+
 interface LinkStateProps {
     dailyUpdate : DailyUpdate,
 }
@@ -66,7 +67,7 @@ const mapStateToProps = (state : AppState, ownProps : CreateDailyUpdateFormProps
 });
 
 const mapDispatchToProps = (dispatch :  ThunkDispatch<any, any, AppActions> , ownProps : CreateDailyUpdateFormProps) : LinkDispatchProps => ({
-    startAddDailyUpdate: (data: { photo: Blob; message: String; }) => dispatch(startAddDailyUpdate(data))
+    startAddDailyUpdate: (data: { photo: Blob | string; message: string; }) => dispatch(startAddDailyUpdate(data))
 });
 
 export default connect( 

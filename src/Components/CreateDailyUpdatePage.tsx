@@ -1,26 +1,34 @@
-import { connect } from "react-redux";
-import { startAddDailyUpdate, startSetDailyUpdates } from "../Actions/DailyUpdateAction"
-import DailyUpdate from "../Models/DailyUpdate/DailyUpdate";
 import { AppState } from "../Store/configureStore";
 import { ThunkDispatch } from "redux-thunk";
-import { AppActions } from "../Actions";
 import Modal from "../Components/Modal";
+
 import CreateDailyUpdateForm from './CreateDailyUpdateForm/CreateDailyUpdateForm';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import DailyUpdateService from "../Services/DailyUpdateService";
+
+//Store
+import { connect } from "react-redux";
+import { AppActions } from "../Actions";
+
+import DailyUpdate from "../Models/DailyUpdate";
+import Alert from "../Models/Alert";
+import { startSetAlert } from "../Actions/AlertAction";
+import { startAddDailyUpdate, startSetDailyUpdates } from "../Actions/DailyUpdateAction"
 
 //React Bootstrap
 import Table from 'react-bootstrap/Table'
-import Image from 'react-bootstrap/Image'
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Breadcrumb from 'react-bootstrap/Breadcrumb';
 import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row'
+import InputGroup from 'react-bootstrap/InputGroup'
+import FormControl from 'react-bootstrap/FormControl'
 
 interface CreateDailyUpdatePageProps {
     
 }
+
 
 type Props = CreateDailyUpdatePageProps & LinkStateProps & LinkDispatchProps;
 
@@ -31,6 +39,8 @@ const CreateDailyUpdatePage = (props: Props) => {
     //Hooks
     const [showModal, setShowModal] = useState(false);
     const [dailyUpdates, setDailyUpdate] = useState<DailyUpdate[]>([]);
+    const [filter, setFilter] = useState<string>("");
+
     //Async effect
     useEffect(() => {
         const fetchData = async () => {
@@ -42,12 +52,17 @@ const CreateDailyUpdatePage = (props: Props) => {
     }, []);
 
     //methods
-    function OnDailyUpdateSend(){
-        dailyUpdateService.SaveDailyUpdate(props.dailyUpdate).then((res : DailyUpdate) => {
-            setDailyUpdate(props.dailyUpdates);
-            dailyUpdates.push(res);
-            props.startSetDailyUpdates(dailyUpdates);
-        });
+    async function OnDailyUpdateSend(){
+        let result = await dailyUpdateService.SaveDailyUpdate(props.dailyUpdate);
+        console.log(result);
+        setDailyUpdate(props.dailyUpdates);
+        dailyUpdates.push(result);
+        props.startSetDailyUpdates(dailyUpdates);
+        props.startSetAlert(new Alert(result.message));
+    }
+
+    function onFilterChanged(event: ChangeEvent<HTMLInputElement>){
+        setFilter(event.target.value);
     }
 
     function toggleModal(){
@@ -60,6 +75,7 @@ const CreateDailyUpdatePage = (props: Props) => {
     return (
         <div>
             <Container className="mt-5 mb-5">
+                
                 <Row>
                     <Col className="col-10">
                         <Breadcrumb> 
@@ -72,20 +88,26 @@ const CreateDailyUpdatePage = (props: Props) => {
                     </Col>
                 </Row>
             </Container>
+            <InputGroup className="mb-3">
+                    <FormControl
+                        onChange={onFilterChanged}
+                        placeholder="filter"
+                        aria-label="message"
+                    />
+                </InputGroup>
             <Table>
                 <thead>
                     <tr>
                         <th>Id</th>
                         <th>Message</th>
-                        <th>photo</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {dailyUpdates.map((dailyupdate) => 
-                        <tr>
+                    {dailyUpdates.filter(d => d.message.includes(filter) || d.id.includes(filter)).map((dailyupdate) => 
+                        <tr key={dailyUpdates.indexOf(dailyupdate)} >
                             <td>{dailyupdate.id}</td>
                             <td>{dailyupdate.message}</td>
-                            <td><Image src="{dailyupdate.photo}"/> </td>
+                            {/*<td><Image src={"data:image/png;base64, " + dailyupdate.photo.toString()}/> </td>*/}
                         </tr>
                     )}
                 </tbody>
@@ -95,25 +117,31 @@ const CreateDailyUpdatePage = (props: Props) => {
     );
 }
 
-
 interface LinkStateProps {
     dailyUpdate: DailyUpdate
     dailyUpdates: DailyUpdate[]
+    alert: Alert
 }
 
 interface LinkDispatchProps {
     startAddDailyUpdate: (dailyUpdate : DailyUpdate) => void;
     startSetDailyUpdates: (dailyupdates : DailyUpdate[]) => void;
+    startSetAlert: (Alert : Alert) => void;
 }
 
 const mapStateToProps = (state : AppState, ownProps : CreateDailyUpdatePageProps)  : LinkStateProps=> ({
     dailyUpdate: state.dailyupdateState.dailyUpdate,
-    dailyUpdates: state.dailyupdateState.dailyUpdates
+    dailyUpdates: state.dailyupdateState.dailyUpdates,
+    alert: state.alertState.alert
 });
 
 const mapDispatchToProps = (dispatch :  ThunkDispatch<any, any, AppActions> , ownProps : CreateDailyUpdatePageProps) : LinkDispatchProps => ({
     startSetDailyUpdates: (data: DailyUpdate[]) => dispatch(startSetDailyUpdates(data)),
-    startAddDailyUpdate: (data: { photo: Blob; message: String; }) => dispatch(startAddDailyUpdate(data))    
+    startAddDailyUpdate: (data: { photo: Blob | string; message: string; }) => dispatch(startAddDailyUpdate(data)),
+    startSetAlert: (data : {message : string}) => {
+        dispatch(startSetAlert(data))
+        alert(data.message)    
+    }
 });
 export default connect(
     mapStateToProps,

@@ -1,4 +1,4 @@
-import { DailyUpdateState } from "../../Store/DailyUpdateInterface";
+import { DailyUpdateState } from "../../Store/DailyUpdateState";
 import { DailyUpdateActionTypes } from "../../Actions";
 
 export const initialState: DailyUpdateState = { dailyUpdate: { id: "0", photo: new File([],"fgh",undefined), message: "Reducer" }, dailyUpdates: [] };

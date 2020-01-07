@@ -23,8 +23,6 @@ interface ModalState {
 
 type Props = ModalProps
 
-
-
 const Modal = (props: Props) => {
     return(
         <div>

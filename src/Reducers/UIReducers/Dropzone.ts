@@ -1,4 +1,4 @@
-import DailyUpdate from '../../Models/DailyUpdate/DailyUpdate'
+import DailyUpdate from '../../Models/DailyUpdate'
 
 export interface DropzoneState {
     file : File,

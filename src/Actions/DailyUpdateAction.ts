@@ -2,7 +2,7 @@ import { Dispatch } from "redux";
 import { AppState } from "../Store/configureStore";
 import { AppActions, ADD_DAILY_UPDATE, SET_DAILY_UPDATES } from "../Actions";
 import uuid from "uuid";
-import DailyUpdate from "../Models/DailyUpdate/DailyUpdate";
+import DailyUpdate from "../Models/DailyUpdate";
 
 export const AddDailyUpdate = (dailyUpdate : DailyUpdate) : AppActions => ({
     type: ADD_DAILY_UPDATE,
@@ -14,7 +14,7 @@ export const SetDailyUpdates = (dailyUpdates : DailyUpdate[]) : AppActions => ({
     dailyUpdates
 });
 
-export const startAddDailyUpdate = (dailyUpdateData : { photo : Blob; message : String }) => {
+export const startAddDailyUpdate = (dailyUpdateData : { photo : Blob | string; message : string }) => {
     return (dispatch : Dispatch<AppActions>, getState: () => AppState) => {
         const id = uuid();
         const dailyUpdate : DailyUpdate = {id, photo: dailyUpdateData.photo, message: dailyUpdateData.message}; 
